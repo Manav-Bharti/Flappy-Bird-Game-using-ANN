@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NeuroBird — AI Learns to Fly</title>
+<style>
+:root{--ink:#eaf4ff;--muted:#9fb4d0;--glass:rgba(11,22,47,.72);--line:rgba(177,211,255,.18);--cyan:#67e8f9;--violet:#a78bfa}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(ellipse at 18% 0%,#183d70 0%,transparent 38%),radial-gradient(ellipse at 90% 15%,#39256b 0%,transparent 34%),#071225;display:flex;align-items:center;justify-content:center;padding:22px}
+.app{width:min(1180px,100%)}header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,#67e8f9,#818cf8 65%,#c084fc);display:grid;place-items:center;font-size:25px;box-shadow:0 8px 28px #67e8f933}.eyebrow{text-transform:uppercase;letter-spacing:.2em;font-size:10px;color:var(--cyan);font-weight:800}.brand h1{font-size:clamp(22px,3vw,30px);margin:2px 0 0;letter-spacing:-.04em}.brand p{margin:4px 0 0;color:var(--muted);font-size:13px}.pill{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#ffffff08;padding:10px 14px;border-radius:99px;font-size:12px;color:#c5d5ec}.dot{width:8px;height:8px;background:#34d399;border-radius:50%;box-shadow:0 0 12px #34d399}
+.layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.8fr);gap:18px}.game-card,.panel{background:linear-gradient(145deg,#12213aee,#0b172cee);border:1px solid var(--line);border-radius:24px;box-shadow:0 24px 80px #0003;overflow:hidden}.game-top{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}.game-top strong{font-size:13px}.live{font-size:11px;color:#a5f3fc;display:flex;align-items:center;gap:7px}.live span{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:pulse 1.4s infinite}@keyframes pulse{50%{opacity:.25;box-shadow:0 0 0 5px #67e8f922}}
+.canvas-wrap{position:relative;background:#8ddcf2;line-height:0}canvas{display:block;width:100%;height:auto;aspect-ratio: 720 / 500}.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}.overlay-card{line-height:1.45;text-align:center;padding:18px 22px;background:#08172dcc;backdrop-filter:blur(12px);border:1px solid #ffffff25;border-radius:18px;max-width:80%;box-shadow:0 14px 50px #07122555}.overlay-card h2{font-size:20px;margin:0 0 6px}.overlay-card p{font-size:12px;color:#c5d5ec;margin:0}.game-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;flex-wrap:wrap}.hint{font-size:11px;color:var(--muted)}.actions{display:flex;gap:8px;flex-wrap:wrap}button{font:inherit;border:0;cursor:pointer;border-radius:12px;padding:10px 14px;font-size:12px;font-weight:750;transition:transform .15s,filter .15s}button:hover{filter:brightness(1.12);transform:translateY(-1px)}button:active{transform:translateY(0)}.primary{background:linear-gradient(135deg,#67e8f9,#818cf8);color:#071225;box-shadow:0 7px 20px #67e8f922}.secondary{background:#ffffff0b;color:#eaf4ff;border:1px solid var(--line)}
+.side{display:flex;flex-direction:column;gap:18px}.panel{padding:18px}.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.panel h3{font-size:13px;margin:0;letter-spacing:.01em}.sub{font-size:10px;color:var(--muted)}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{padding:13px;border-radius:15px;background:#ffffff06;border:1px solid #ffffff0b}.metric label{display:block;color:var(--muted);font-size:10px;margin-bottom:8px}.metric strong{font-size:24px;letter-spacing:-.04em}.metric small{font-size:10px;color:var(--cyan);margin-left:4px}.chartbox{height:104px;position:relative;margin-top:10px}.chartbox canvas{width:100%;height:100%;aspect-ratio:auto}.progress-line{height:5px;border-radius:99px;background:#ffffff12;overflow:hidden;margin:12px 0 7px}.progress-line div{height:100%;width:0;background:linear-gradient(90deg,#67e8f9,#a78bfa);border-radius:99px;transition:width .2s}.statrow{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}.brain{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.brain div{background:#ffffff06;border-radius:12px;padding:10px}.brain span{display:block;font-size:10px;color:var(--muted);margin-bottom:5px}.brain b{font-size:13px}.status{display:flex;gap:10px;align-items:flex-start;margin-top:13px;padding:11px;border-radius:13px;background:#67e8f90c;border:1px solid #67e8f91a;font-size:11px;color:#c9f8ff;line-height:1.45}.status i{font-style:normal;font-size:15px}.footer{font-size:10px;color:#7f94b2;text-align:center;margin-top:16px}.footer b{color:#a5f3fc;font-weight:600}
+@media(max-width:820px){body{padding:12px}.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.side .panel:first-child{grid-column:1/-1}.brand p{max-width:280px}}@media(max-width:520px){.side{display:flex}.game-top{padding:13px 15px}.game-bottom{padding:12px}.metric strong{font-size:21px}.pill{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="brand"><div class="logo">🐤</div><div><div class="eyebrow">Neuroevolution lab</div><h1>NeuroBird <span style="color:#67e8f9">AI</span></h1><p>A tiny neural network learning to beat gravity.</p></div></div>
+ <div class="pill"><span class="dot"></span><span id="modeLabel">AUTONOMOUS TRAINING</span></div>
+</header>
+<div class="layout">
+ <section class="game-card">
+  <div class="game-top"><strong>01 / LIVE SIMULATION</strong><div class="live"><span></span><b id="liveText">AI PILOT ACTIVE</b></div></div>
+  <div class="canvas-wrap"><canvas id="game" width="720" height="500" aria-label="NeuroBird game simulation"></canvas><div class="overlay" id="overlay" style="display:none"><div class="overlay-card"><h2 id="overlayTitle">Training paused</h2><p id="overlayText">Resume when you're ready.</p></div></div></div>
+  <div class="game-bottom"><div class="hint" id="hint">AI is playing · no input needed</div><div class="actions"><button class="secondary" id="speedBtn">Speed: 1×</button><button class="secondary" id="pauseBtn">Pause</button><button class="primary" id="trainBtn">↻ New training</button></div></div>
+ </section>
+ <aside class="side">
+  <section class="panel">
+   <div class="panel-head"><h3>Training dashboard</h3><span class="sub">LIVE METRICS</span></div>
+   <div class="metrics">
+    <div class="metric"><label>GENERATION</label><strong id="generation">1</strong></div>
+    <div class="metric"><label>BEST SCORE</label><strong id="best">0</strong><small>pts</small></div>
+    <div class="metric"><label>CURRENT SCORE</label><strong id="score">0</strong></div>
+    <div class="metric"><label>ALIVE BIRDS</label><strong id="alive">24</strong></div>
+   </div>
+   <div style="margin-top:17px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:#c5d5ec">Generation progress</span><b id="progressText" style="font-size:11px">0 / 24</b></div>
+   <div class="progress-line"><div id="progress"></div></div>
+   <div class="statrow"><span>Birds evaluated</span><span id="evaluated">0%</span></div>
+  </section>
+  <section class="panel">
+   <div class="panel-head"><h3>Learning curve</h3><span class="sub">BEST FITNESS</span></div>
+   <div class="chartbox"><canvas id="chart" width="500" height="130"></canvas></div>
+   <div class="statrow"><span>Score per generation</span><span id="trend">Collecting data…</span></div>
+  </section>
+  <section class="panel">
+   <div class="panel-head"><h3>Neural network</h3><span class="sub">3 → 8 → 1</span></div>
+   <div style="font-size:11px;color:#9fb4d0;line-height:1.6">Inputs describe the next obstacle. A small feed-forward ANN decides when to flap; evolution improves its weights after each round.</div>
+   <div class="brain"><div><span>Algorithm</span><b>Genetic evolution</b></div><div><span>Selection</span><b>Top performers</b></div><div><span>Inputs</span><b>Gap + distance</b></div><div><span>Mutation</span><b>Adaptive weights</b></div></div>
+   <div class="status"><i>✦</i><div id="learningStatus">Starting first generation. Each attempt helps evolve a stronger pilot.</div></div>
+  </section>
+ </aside>
+</div>
+<div class="footer">Built with <b>JavaScript + Canvas + a neural network</b> · Training runs locally in your browser</div>
+</div>
+<script>
+(() => {
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const chart=document.getElementById('chart'),cx=chart.getContext('2d');
+const W=720,H=500,GROUND=46,POP=24,INPUTS=4,HIDDEN=8;
+const $=id=>document.getElementById(id);
+let generation=1,bestEver=0,bestHistory=[],population=[],birds=[],pipes=[],frame=0,score=0,alive=POP,paused=false,speed=1,roundOver=false,roundTimer=0,champion=null,showcase=false,backgroundT=0,last=0,acc=0;
+let rngSeed=Date.now()>>>0;
+function rand(){rngSeed=(Math.imul(rngSeed,1664525)+1013904223)>>>0;return rngSeed/4294967296}
+function randn(){return Math.sqrt(-2*Math.log(Math.max(.00001,rand())))*Math.cos(2*Math.PI*rand())}
+function sigmoid(x){return 1/(1+Math.exp(-Math.max(-30,Math.min(30,x))))}
+function makeBrain(){return {w1:Array.from({length:INPUTS*HIDDEN},()=>randn()*0.8),b1:Array.from({length:HIDDEN},()=>randn()*0.3),w2:Array.from({length:HIDDEN},()=>randn()*0.8),b2:randn()*0.3,fitness:0,score:0}}
+function think(net,x){let h=new Array(HIDDEN);for(let j=0;j<HIDDEN;j++){let z=net.b1[j];for(let i=0;i<INPUTS;i++)z+=x[i]*net.w1[i*HIDDEN+j];h[j]=Math.tanh(z)}let out=net.b2;for(let j=0;j<HIDDEN;j++)out+=h[j]*net.w2[j];return sigmoid(out)}
+function clone(n){return {w1:n.w1.slice(),b1:n.b1.slice(),w2:n.w2.slice(),b2:n.b2,fitness:0,score:0}}
+function mutate(n,rate=.13){for(const a of [n.w1,n.b1,n.w2])for(let i=0;i<a.length;i++){if(rand()<rate)a[i]+=randn()*(rand()<.1?1.0:.28);a[i]=Math.max(-4,Math.min(4,a[i]))}if(rand()<rate)n.b2+=randn()*.3;n.b2=Math.max(-4,Math.min(4,n.b2));return n}
+function newPopulation(){population=Array.from({length:POP},()=>makeBrain());startGeneration()}
+function startGeneration(){birds=population.map((brain,i)=>({brain,x:165,y:210+rand()*70,vy:0,alive:true,score:0,flapGlow:0,hue:185+i*5}));pipes=[];frame=0;score=0;alive=POP;roundOver=false;roundTimer=0;showcase=false;addPipe(W+40);addPipe(W+320);updateHUD()}
+function addPipe(x){const gap=150;const top=70+rand()*(H-GROUND-gap-140);pipes.push({x,top,gap,passed:false})}
+function resetTraining(){generation=1;bestEver=0;bestHistory=[];champion=null;newPopulation();$('learningStatus').textContent='Fresh population created. The birds will evolve through trial and error.';$('overlay').style.display='none';paused=false;$('pauseBtn').textContent='Pause';}
+function flap(b){b.vy=-5.5;b.flapGlow=1}
+function step(){
+ backgroundT+=1;
+ if(roundOver){roundTimer++;if(roundTimer>38)nextGeneration();return}
+ frame++;
+ if(frame%90===0)pipes.push({x:W+20,top:70+rand()*(H-GROUND-220),gap:150,passed:false});
+ for(const p of pipes)p.x-=2.6;
+ pipes=pipes.filter(p=>p.x>-80);
+ const next=pipes.find(p=>p.x+65>165)||pipes[0];
+ for(const b of birds){if(!b.alive)continue;
+  const p=next||{x:W,top:170,gap:150};
+  const inputs=[(b.y/H)*2-1,(p.top/H)*2-1,((p.top+p.gap)/H)*2-1,Math.max(-1,Math.min(1,(p.x-165)/W))];
+  if(think(b.brain,inputs)>.5)flap(b);
+  b.vy+=.27;b.y+=b.vy;b.flapGlow=Math.max(0,b.flapGlow-.09);b.score=frame;
+  if(b.y<12||b.y>H-GROUND-10)b.alive=false;
+  for(const q of pipes){if(165+13>q.x&&165-13<q.x+62&&(b.y-11<q.top||b.y+11>q.top+q.gap))b.alive=false;
+   if(!q.passed&&q.x+62<165){q.passed=true;score++}
+  }
+  if(!b.alive)b.brain.fitness=frame+score*180;
+ }
+ alive=birds.filter(b=>b.alive).length;
+ if(alive===0||frame>5200){finishGeneration()}
+}
+function finishGeneration(){if(roundOver)return;roundOver=true;roundTimer=0;for(const b of birds){b.brain.score=score;b.brain.fitness=Math.max(b.brain.fitness||0,b.score+score*180)}let top=birds.slice().sort((a,b)=>b.brain.fitness-a.brain.fitness)[0];if(top){champion=clone(top.brain);let best=Math.max(score,Math.floor(top.brain.fitness/180));bestEver=Math.max(bestEver,best)}bestHistory.push(Math.max(score,Math.floor((top?.brain.fitness||0)/180)));if(bestHistory.length>60)bestHistory.shift();$('learningStatus').textContent=`Generation ${generation} complete. Selecting the strongest birds and mutating their neural-network weights.`;updateHUD()}
+function nextGeneration(){population.sort((a,b)=>b.fitness-a.fitness);let sorted=birds.map(b=>b.brain).sort((a,b)=>b.fitness-a.fitness);if(sorted[0]){champion=clone(sorted[0]);bestEver=Math.max(bestEver,Math.floor(sorted[0].fitness/180))}const next=[];const elite=Math.max(2,Math.floor(POP*.17));for(let i=0;i<elite&&i<sorted.length;i++)next.push(clone(sorted[i]));while(next.length<POP){const parent=sorted[Math.floor(Math.pow(rand(),1.8)*Math.min(POP,Math.max(1,sorted.length)))]||makeBrain();next.push(mutate(clone(parent),.12+Math.min(.12,generation*.001)))}population=next;generation++;startGeneration();updateHUD()}
+function updateHUD(){ $('generation').textContent=generation;$('best').textContent=bestEver;$('score').textContent=score;$('alive').textContent=alive;$('progressText').textContent=`${POP-alive} / ${POP}`;$('progress').style.width=((POP-alive)/POP*100)+'%';$('evaluated').textContent=Math.round((POP-alive)/POP*100)+'%';$('modeLabel').textContent=paused?'PAUSED': 'AUTONOMOUS TRAINING';$('liveText').textContent=paused?'SIMULATION PAUSED':roundOver?'EVOLVING NEXT GEN':'AI PILOT ACTIVE';drawChart();if(bestHistory.length>1){let a=bestHistory[bestHistory.length-2],b=bestHistory[bestHistory.length-1];$('trend').textContent=(b>=a?'↗ +':'↘ ')+(b-a)+' pts'} }
+function rounded(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+function drawBackground(){let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#84dff5');g.addColorStop(.65,'#b4eff4');g.addColorStop(1,'#e0f8e9');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ // distant hazy sun
+ let sun=ctx.createRadialGradient(560,90,8,560,90,85);sun.addColorStop(0,'#fff8cbcc');sun.addColorStop(1,'#fff8cb00');ctx.fillStyle=sun;ctx.fillRect(460,0,200,190);
+ for(let i=0;i<5;i++){let x=((i*190-backgroundT*.25)%(W+180)+W+180)%(W+180)-80;ctx.fillStyle='#ffffff60';ctx.beginPath();ctx.ellipse(x,75+(i%3)*38,37,10,0,0,Math.PI*2);ctx.ellipse(x+23,72+(i%3)*38,25,14,0,0,Math.PI*2);ctx.ellipse(x+45,78+(i%3)*38,27,9,0,0,Math.PI*2);ctx.fill()}
+ // rolling hills
+ ctx.fillStyle='#79d5bc';ctx.beginPath();ctx.moveTo(0,H-GROUND);for(let x=0;x<=W;x+=20)ctx.lineTo(x,385+Math.sin(x*.012+backgroundT*.004)*24+Math.sin(x*.026)*8);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
+ ctx.fillStyle='#45bd9f';ctx.beginPath();ctx.moveTo(0,H-GROUND);for(let x=0;x<=W;x+=18)ctx.lineTo(x,425+Math.sin(x*.014+backgroundT*.006)*15);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
+}
+function drawPipe(p){const x=p.x,w=62,bot=p.top+p.gap;ctx.save();ctx.shadowColor='#176f61';ctx.shadowBlur=8;const grad=ctx.createLinearGradient(x,0,x+w,0);grad.addColorStop(0,'#168c78');grad.addColorStop(.28,'#55d6a2');grad.addColorStop(.72,'#29b88e');grad.addColorStop(1,'#117864');ctx.fillStyle=grad;ctx.fillRect(x,0,w,p.top-1);ctx.fillRect(x,bot,w,H-GROUND-bot);ctx.shadowBlur=0;ctx.fillStyle='#65e5b1';ctx.fillRect(x-5,p.top-18,w+10,18);ctx.fillRect(x-5,bot,w+10,18);ctx.fillStyle='#117764';ctx.fillRect(x-5,p.top-18,w+10,4);ctx.fillRect(x-5,bot+14,w+10,4);ctx.restore()}
+function drawBird(b,index){const x=165,y=b.y;ctx.save();ctx.translate(x,y);ctx.rotate(Math.max(-.45,Math.min(.65,b.vy*.065)));let glow=ctx.createRadialGradient(0,0,3,0,0,28);glow.addColorStop(0,'#fff5ad66');glow.addColorStop(1,'#fff5ad00');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,28,0,Math.PI*2);ctx.fill();
+ const body=ctx.createLinearGradient(-15,-14,15,14);body.addColorStop(0,'#fff49c');body.addColorStop(1,'#ffad45');ctx.fillStyle=body;ctx.beginPath();ctx.ellipse(0,0,14,11,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#ffca64';ctx.beginPath();ctx.ellipse(-5,4+Math.sin(backgroundT*.4+index)*2,7,4,-.4,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#ff8b55';ctx.beginPath();ctx.moveTo(10,-2);ctx.lineTo(22,1);ctx.lineTo(10,4);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(5,-5,5.1,0,Math.PI*2);ctx.fill();ctx.fillStyle='#152849';ctx.beginPath();ctx.arc(7,-5,2.5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(7.5,-6,1,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle='#ed9a4a';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(-5,9);ctx.lineTo(3,9);ctx.stroke();ctx.restore()}
+function render(){drawBackground();for(const p of pipes)drawPipe(p);
+ // ground strip
+ ctx.fillStyle='#f6d58a';ctx.fillRect(0,H-GROUND,W,GROUND);ctx.fillStyle='#b7e777';ctx.fillRect(0,H-GROUND,W,8);ctx.fillStyle='#8dcf65';for(let x=-((backgroundT*2)%24);x<W;x+=24){ctx.beginPath();ctx.moveTo(x,H-GROUND+8);ctx.lineTo(x+11,H-GROUND+8);ctx.lineTo(x+4,H-GROUND+15);ctx.closePath();ctx.fill()}
+ // show up to 12 living birds, highlight top performer
+ let living=birds.filter(b=>b.alive);if(living.length>0){const top=living.reduce((a,b)=>b.score>a.score?b:a,living[0]);for(let i=0;i<living.length;i++){if(living[i]!==top&&i%2===1)drawBird({...living[i],hue:190},i)}drawBird(top,0)}
+ if(roundOver){ctx.fillStyle='#0b1a2d15';ctx.fillRect(0,0,W,H);ctx.fillStyle='#11243dcc';rounded(245,190,230,94,18);ctx.fillStyle='#a5f3fc';ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.fillText('GENERATION COMPLETE',360,220);ctx.fillStyle='#fff';ctx.font='800 30px system-ui';ctx.fillText('Evolving…',360,255);ctx.fillStyle='#d1e5f4';ctx.font='12px system-ui';ctx.fillText('Keeping the strongest neural networks',360,274)}
+}
+function drawChart(){const w=chart.width,h=chart.height;cx.clearRect(0,0,w,h);cx.strokeStyle='#ffffff10';cx.lineWidth=1;for(let i=1;i<4;i++){cx.beginPath();cx.moveTo(0,h*i/4);cx.lineTo(w,h*i/4);cx.stroke()}if(!bestHistory.length){cx.fillStyle='#7187a5';cx.font='12px system-ui';cx.fillText('Waiting for first generation…',10,55);return}let max=Math.max(5,...bestHistory)*1.15;const pts=bestHistory.map((v,i)=>({x:bestHistory.length===1?w*.5:i/(bestHistory.length-1)*w,y:h-8-v/max*(h-18)}));const gr=cx.createLinearGradient(0,0,w,h);gr.addColorStop(0,'#67e8f9');gr.addColorStop(1,'#a78bfa');cx.beginPath();pts.forEach((p,i)=>i?cx.lineTo(p.x,p.y):cx.moveTo(p.x,p.y));cx.strokeStyle=gr;cx.lineWidth=2.5;cx.lineJoin='round';cx.stroke();cx.lineTo(pts[pts.length-1].x,h);cx.lineTo(pts[0].x,h);cx.closePath();const fill=cx.createLinearGradient(0,0,0,h);fill.addColorStop(0,'#67e8f930');fill.addColorStop(1,'#67e8f900');cx.fillStyle=fill;cx.fill();let p=pts[pts.length-1];cx.beginPath();cx.arc(p.x,p.y,3.5,0,Math.PI*2);cx.fillStyle='#a5f3fc';cx.fill()}
+function loop(t){if(!last)last=t;const dt=Math.min(50,t-last);last=t;if(!paused){acc+=dt;const stepMs=1000/60;let steps=0;while(acc>=stepMs&&steps<12){for(let k=0;k<speed;k++)step();acc-=stepMs;steps++}if(frame%6===0)updateHUD()}render();requestAnimationFrame(loop)}
+$('pauseBtn').onclick=()=>{paused=!paused;$('pauseBtn').textContent=paused?'Resume':'Pause';$('overlay').style.display=paused?'flex':'none';$('overlayTitle').textContent='Training paused';$('overlayText').textContent='Your progress is preserved. Resume to continue evolution.';updateHUD()};
+$('speedBtn').onclick=()=>{speed=speed===1?2:speed===2?4:1;$('speedBtn').textContent=`Speed: ${speed}×`};
+$('trainBtn').onclick=resetTraining;
+window.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();if(paused){paused=false;$('overlay').style.display='none';$('pauseBtn').textContent='Pause';updateHUD()}}});
+newPopulation();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
